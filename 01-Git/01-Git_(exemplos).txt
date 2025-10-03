@@ -58,7 +58,7 @@ git status
 # Você verá que existe um arquivo novo não rastreado.
 
 
-# No Git, um arquivo pode estar em três estados principais:
+# Três estados principais:
 # Untracked (não rastreado) → o Git ainda não conhece o arquivo.
 # Staged (preparado) → o arquivo está pronto para ser incluído no próximo commit.
 # Committed (salvo no histórico) → o arquivo e suas alterações foram salvos permanentemente no repositório.
@@ -174,7 +174,7 @@ git pull origin main
 
 # Se você já tem código local e o GitHub está vazio → você deve usar:
 git push -u origin main
-
+# O -u faz com que, no futuro, você só precise rodar git push sem especificar o remoto/branch.
 
 # Se o GitHub já tem código e sua pasta local está vazia (sem nada relevante) → o melhor é apagar a pasta local e fazer:
 git clone https://github.com/seu-usuario/meu-projeto.git
@@ -197,5 +197,10 @@ git mv arquivo1.txt arquivo2.txt
 
 # mover arquivo para outro diretório:
 git mv arquivo1.txt nova_pasta/
+
+
+# marca pontos específicos em seu histórico do Git, como v1.0 ou v2.0:
+git tag v1.0
+
 
 
