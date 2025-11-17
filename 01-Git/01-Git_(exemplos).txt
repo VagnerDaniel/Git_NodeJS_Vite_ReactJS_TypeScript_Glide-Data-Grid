@@ -1,0 +1,206 @@
+
+
+=====================================================================
+GIT
+=====================================================================
+
+Download do Git
+https://git-scm.com/downloads
+
+instalar
+
+# Verificar se o Git está funcionando
+git --version
+# ou
+git -v
+# Se aparecer algo como git version 2.x.x, está tudo certo.
+
+
+
+# Criar seu primeiro repositório
+# Um repositório Git é a “caixa” onde seu código e o histórico ficam guardados.
+# Criar uma pasta de teste:
+mkdir projeto-git
+# Acessar a pasta:
+cd projeto-git
+# Inicializar versionamento nesta pasta
+git init
+
+
+# Configuração inicial
+# Antes de usar o Git, precisamos dizer quem você é (nome e e-mail). Isso é importante porque cada commit (salvamento de versão) precisa de um autor.
+git config --global user.name "Seu Nome"
+git config --global user.email "seuemail@exemplo.com"
+
+# Para verificar se ficou certo:
+git config --list
+# Para ver o que está valendo dentro do repositório
+
+
+# Configurar usuário apenas no repositório atual
+# Dentro da pasta do projeto (já iniciada com git init), rode:
+git config user.name "Outro Nome"
+git config user.email "outroemail@exemplo.com"
+# Só não usar --global
+# Isso grava a configuração apenas no repositório atual.
+
+
+# Ver configurações mostrando caminho completo (global, local, sistema):
+git config --list --show-origin
+
+
+
+# Criar um arquivo simples para teste
+echo "# curso_git" >> README.md
+
+# Verifique o status do repositório:
+git status
+# Você verá que existe um arquivo novo não rastreado.
+
+
+# Três estados principais:
+# Untracked (não rastreado) → o Git ainda não conhece o arquivo.
+# Staged (preparado) → o arquivo está pronto para ser incluído no próximo commit.
+# Committed (salvo no histórico) → o arquivo e suas alterações foram salvos permanentemente no repositório.
+
+
+# Para rastrear e salvar a versão dele:
+git add README.md
+git commit -m "Primeiro commit: adicionando README.md"
+# Com -m a mensagem é escrita direto na linha de comando, mais rápido e prático. 
+# se não o Git abre um editor de texto para digitar a mensagem
+
+
+# mensagens longas de commit usando -m
+# Título (até 50 caracteres) → resumo da mudança
+# Linha em branco
+# Corpo da mensagem (até 72 caracteres por linha) → explica o que e por que mudou
+git commit -m "Corrige bug de login com senha vazia" -m "O problema acontecia porque o campo 'password' não era validado. Agora o middleware de autenticação verifica se a senha existe antes de tentar logar. Isso evita falhas no servidor."
+
+
+# Retirar arquivo do próximo commit
+git rm --cached README.md
+
+
+# adiciona todos os arquivos da pasta atual e suas subpastas
+git add .
+
+
+# Mostra histórico completo dos commits, incluindo:
+# Hash do commit (identificador único)
+# Autor e e-mail
+# Data
+# Mensagem do commit     
+git log
+
+# 7 caracteres do inicio do Hash do commit + título do commit (cada commit em uma linha)
+git log --oneline
+
+# Hash completo do commit + título do commit (cada commit em uma linha)
+git log --pretty=oneline
+
+
+# Mostra quais arquivos foram alterados em cada commit (+ git log) 
+git log --stat
+
+
+
+# Listar branch e saber qual você está, com asterisco
+git branch
+
+# Branches remotas (as que estão no GitHub, ou outro remote configurado):
+git branch -r
+
+# Todas as branches (locais + remotas):
+git branch -a
+
+# Criar uma nova branch (copiando o ponto da branch atual)
+git branch nome-da-branch
+
+
+# Cria uma nova branch a partir de um commit específico
+git branch nova-branch <hash-do-commit>
+
+
+# Mudar para a branch criada (vai para o ultimo commit de uma branch, HEAD)
+git checkout nome-da-branch
+
+# renomear uma branch:
+git branch -m nome-do-branch novo-nome-do-branch
+
+# Se você quiser mudar para um ponto antigo de uma branch / ir para um commit diferente: (no hash os 7 dig primeiros já serve)
+# Vai para um commit sem criar uma branch (ficar em detached HEAD):
+git checkout <hash-do-commit>
+
+
+# Criar e já mudar para a branch
+git checkout -b nome-da-branch
+
+
+# Depois de terminar a nova feature, você pode juntar com a main:
+
+# Ir para a main
+git checkout main
+
+# Trazer alterações da branch para a main
+git merge nome-da-branch
+
+
+# Apagar branch local
+git branch -d nome-da-branch
+
+# Apagar branch remoto
+git push origin --delete nome-da-branch
+
+
+
+# Fluxo comum no dia a dia
+# 1-Estar na main → git checkout main
+# 2-Atualizar → git pull
+# 3-Criar branch → git checkout -b feature-nova
+# 4-Trabalhar e fazer commits
+# 5-Voltar pra main e dar merge
+
+
+
+# Conectar o repositório local ao GitHub (Usando HTTPS)
+# Mais simples, mas pede login/token:
+git remote add origin https://github.com/seu-usuario/meu-projeto.git
+
+
+# O Git vai tentar mesclar o branch remoto (origin/main) com o branch atual local. (o main pode ser master ou outro branch do GitHub)
+git pull origin main
+
+
+# Se você já tem código local e o GitHub está vazio → você deve usar:
+git push -u origin main
+# O -u faz com que, no futuro, você só precise rodar git push sem especificar o remoto/branch.
+
+# Se o GitHub já tem código e sua pasta local está vazia (sem nada relevante) → o melhor é apagar a pasta local e fazer:
+git clone https://github.com/seu-usuario/meu-projeto.git
+
+
+# identifica as diferenças em um arquivo específico:
+git diff arquivo1.txt
+
+
+# compara alterações entre dois commits:
+git diff commit1 commit2
+
+
+# remove arquivo e prepara a remoção para o próximo commit.
+git rm arquivo1.txt
+
+
+# renomear e mover arquivos:
+git mv arquivo1.txt arquivo2.txt
+
+# mover arquivo para outro diretório:
+git mv arquivo1.txt nova_pasta/
+
+
+# marca pontos específicos em seu histórico do Git, como v1.0 ou v2.0:
+git tag v1.0
+
+
+
