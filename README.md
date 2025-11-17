@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -176,4 +175,4 @@ TypeScript
 
 01-Git (Exemplos de comandos comentados)
 
->>>>>>> 66bcac2910509ae109251e74618f3fe996332173
+
