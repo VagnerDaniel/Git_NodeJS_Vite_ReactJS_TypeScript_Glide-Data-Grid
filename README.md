@@ -16,44 +16,17 @@ Aprendendo Git + NodeJS + Vite + ReactJS + TypeScript + Glide-Data-Grid (exemplo
   npm -v
 ```
 
+Caso dê erro de scripts desabilitado use este comando pra liberar:
+
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
 #### Novo projeto
 
-Use o criador do Vite (versão mais recente), crie um novo projeto na pasta ‘meu-projeto’, usando o template React + TypeScript: (sem instalar o react)
+Use o criador do Vite (versão mais recente), crie um novo projeto na pasta ‘meu-projeto’, usando o template React + TypeScript: (sem instalar o react, pois o Glide-Data-Grid 6.0.3 só funciona no 18)
 
 ```bash
 npm create vite@latest meu-projeto -- --template react-ts --no-install
 ```
-</br>
-</br>
-
-Se der erro faça assim:
-
-Abra o PowerShell como Administrador
-
-Pesquise no menu iniciar:
-
-  PowerShell
-  
-  Clique com botão direito → Executar como administrador
-  
-
-Depois execute este comando:
-
-```bash
-Set-ExecutionPolicy RemoteSigned
-```
-
-Ele vai perguntar:
-
-Tem certeza de que deseja alterar a política de execução?
-
-[Y] Sim  [A] Sim para todos  ...
-
-
-Digite:
-
-A
-
 </br>
 </br>
 
@@ -87,7 +60,7 @@ npm install @glideapps/glide-data-grid
 </br>
 </br>
 
-
+## Baixar do github
 
 instale
 Crie uma nova pasta para o projeto
