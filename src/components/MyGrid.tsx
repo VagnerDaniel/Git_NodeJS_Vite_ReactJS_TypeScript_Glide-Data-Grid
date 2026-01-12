@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import DataEditor, {
     type GridColumn,
     type Item,
@@ -56,8 +56,9 @@ export default function MyGrid(props: MyGridProps) {
         ...rest
     } = props;
 
-    const [rowsData, setRowsData] = useState<GridDataRecord[]>(initialData);
+    const [rowsData, setRowsData] = useState<GridDataRecord[]>(initialData || []);
     const [isLocked, setIsLocked] = useState(!isEditableProp);
+    const [sortState, setSortState] = useState<{ columnId?: string, direction: 'asc' | 'desc' } | undefined>();
     const [internalColumns, setInternalColumns] = useState<GridColumn[]>(columns);
 
     const [selection, setSelection] = useState<GridSelection>({
@@ -66,65 +67,80 @@ export default function MyGrid(props: MyGridProps) {
     });
 
     // Sincroniza estado de edição quando a prop muda
-    useMemo(() => {
+    useEffect(() => {
         setIsLocked(!isEditableProp);
     }, [isEditableProp]);
 
-    // Sincroniza colunas internas quando a prop muda
-    useMemo(() => {
-        setInternalColumns(columns);
-    }, [columns]);
+    // Ordenação dos dados
+    const sortedRows = useMemo(() => {
+        if (!sortState) return rowsData;
+
+        return [...rowsData].sort((a, b) => {
+            const valA = a[sortState.columnId!];
+            const valB = b[sortState.columnId!];
+
+            if (valA === valB) return 0;
+            if (valA === undefined) return 1;
+            if (valB === undefined) return -1;
+
+            const multiplier = sortState.direction === "asc" ? 1 : -1;
+            return valA < valB ? -1 * multiplier : 1 * multiplier;
+        });
+    }, [rowsData, sortState]);
+
+    const onHeaderClicked = useCallback((colIndex: number) => {
+        const columnId = internalColumns[colIndex].id as string;
+        setSortState(prev => {
+            if (prev?.columnId === columnId) {
+                if (prev.direction === "asc") return { columnId, direction: "desc" };
+                return undefined;
+            }
+            return { columnId, direction: "asc" };
+        });
+    }, [internalColumns]);
+
+    // Atualiza indicadores visuais nas colunas
+    const displayColumns = useMemo(() => {
+        return internalColumns.map(c => {
+            if (sortState && c.id === sortState.columnId) {
+                return {
+                    ...c,
+                    title: `${c.title} ${sortState.direction === "asc" ? "↑" : "↓"}`
+                };
+            }
+            return c;
+        });
+    }, [internalColumns, sortState]);
 
     const getCellContent = useCallback(([col, row]: Item): GridCell => {
         const column = internalColumns[col];
         const columnId = column.id as string;
-        const rowData = rowsData[row];
+        const rowData = sortedRows[row];
         const value = rowData ? rowData[columnId] : undefined;
 
         const isColEditable = editableColumns[columnId] !== false;
         const canEdit = !isLocked && isColEditable;
 
-        // Lógica de tipos de células baseada no valor ou na coluna
-        if (typeof value === "boolean") {
+        // Log para depurar por que uma célula não edita (usar com cautela para não poluir)
+        // if (row === 0) console.log(`Célula [${col},${row}] (${columnId}) - canEdit: ${canEdit}`);
+
+        if (typeof value === "boolean" || columnId === "ativo") {
             return {
                 kind: GridCellKind.Boolean,
-                data: value,
-                allowOverlay: false,
+                data: Boolean(value),
+                allowOverlay: false, // Booleano não usa overlay
                 readonly: !canEdit,
             };
         }
 
-        if (columnId === "idade" || typeof value === "number") {
+        if (typeof value === "number" || columnId === "idade" || columnId === "progresso") {
             return {
                 kind: GridCellKind.Number,
-                data: Number(value),
-                displayData: String(value),
-                allowOverlay: canEdit,
-            };
-        }
-
-        if (columnId === "progresso") {
-            return {
-                kind: GridCellKind.Number,
-                data: Number(value),
-                displayData: `${value}%`,
+                data: value !== undefined ? Number(value) : 0,
+                displayData: columnId === "progresso" ? `${value}%` : String(value || 0),
                 allowOverlay: canEdit,
                 readonly: !canEdit,
             };
-        }
-
-        // Customização visual para "Status"
-        if (columnId === "status") {
-            return {
-                kind: GridCellKind.Text,
-                data: String(value || ""),
-                displayData: String(value || ""),
-                allowOverlay: canEdit,
-                contentAlign: "center",
-                themeOverride: {
-                    textDark: value === "Ativo" ? "#4CAF50" : "#F44336",
-                }
-            } as TextCell;
         }
 
         return {
@@ -134,15 +150,22 @@ export default function MyGrid(props: MyGridProps) {
             allowOverlay: canEdit,
             readonly: !canEdit,
         } as TextCell;
-    }, [rowsData, isLocked, internalColumns, editableColumns]);
+    }, [sortedRows, isLocked, internalColumns, editableColumns]);
 
     const onCellEdited = useCallback(([col, row]: Item, newValue: GridCell) => {
         const columnId = internalColumns[col].id as string;
-        let finalValue: any = undefined;
 
-        if (newValue.kind === GridCellKind.Text) finalValue = newValue.data;
-        if (newValue.kind === GridCellKind.Boolean) finalValue = newValue.data;
-        if (newValue.kind === GridCellKind.Number) finalValue = newValue.data;
+        let finalValue: any;
+        if (newValue.kind === GridCellKind.Text ||
+            newValue.kind === GridCellKind.Number ||
+            newValue.kind === GridCellKind.Boolean) {
+            finalValue = (newValue as any).data;
+        } else {
+            console.warn("Tipo de célula não suportado para edição:", newValue.kind);
+            return;
+        }
+
+        console.log(`✅ Editando: [${col},${row}] ${columnId} ->`, finalValue);
 
         setRowsData(prev => {
             const newData = [...prev];
@@ -181,6 +204,7 @@ export default function MyGrid(props: MyGridProps) {
     }, [rowsData.length, internalColumns, onRowAppendedProp, onDataChange]);
 
     const onColumnMoved = useCallback((from: number, to: number) => {
+        console.log(`Movendo coluna de ${from} para ${to}`);
         setInternalColumns(prev => {
             const newCols = [...prev];
             const [moved] = newCols.splice(from, 1);
@@ -195,17 +219,99 @@ export default function MyGrid(props: MyGridProps) {
         });
     }, []);
 
+    const containerRef = useRef<HTMLDivElement>(null);
     const [showSearch, setShowSearch] = useState(false);
+    const [menuConfig, setMenuConfig] = useState<{ x: number, y: number, colIndex: number, bounds: { x: number, y: number, width: number, height: number } } | undefined>();
+    const [renameModal, setRenameModal] = useState<{ colIndex: number, title: string, x: number, y: number, width: number, height: number } | undefined>();
+
+    const onHeaderContextMenu = useCallback((colIndex: number, event: any) => {
+        event.preventDefault();
+
+        // Tenta capturar de várias fontes possíveis para garantir que não seja 0,0
+        const x = event.localEvent?.clientX ?? event.clientX ?? 0;
+        const y = event.localEvent?.clientY ?? event.clientY ?? 0;
+
+        setMenuConfig({
+            x,
+            y,
+            colIndex,
+            bounds: event.bounds
+        });
+    }, []);
+
+    const addColumn = useCallback(() => {
+        if (!menuConfig) return;
+        const newId = `col_${Date.now()}`;
+        const newCol: GridColumn = {
+            id: newId,
+            title: "Nova Coluna",
+            width: 150
+        };
+
+        const newCols = [...internalColumns];
+        newCols.splice(menuConfig.colIndex + 1, 0, newCol);
+        setInternalColumns(newCols);
+        setMenuConfig(undefined);
+    }, [menuConfig, internalColumns]);
+
+    const removeColumn = useCallback(() => {
+        if (!menuConfig) return;
+        const colToRemove = internalColumns[menuConfig.colIndex];
+
+        // Proteção para não remover a coluna ID
+        if (colToRemove.id === "id") {
+            alert("A coluna ID não pode ser removida.");
+            setMenuConfig(undefined);
+            return;
+        }
+
+        const newCols = internalColumns.filter((_, i) => i !== menuConfig.colIndex);
+        setInternalColumns(newCols);
+        setMenuConfig(undefined);
+    }, [menuConfig, internalColumns]);
+
+    const renameColumn = useCallback(() => {
+        if (!menuConfig || !containerRef.current) return;
+        const col = internalColumns[menuConfig.colIndex];
+
+        if (col.id === "id") {
+            alert("A coluna ID não pode ser renomeada.");
+            setMenuConfig(undefined);
+            return;
+        }
+
+        const { bounds } = menuConfig;
+
+        // O cabeçalho está sempre no topo do grid-wrapper
+        setRenameModal({
+            colIndex: menuConfig.colIndex,
+            title: col.title,
+            x: bounds.x,
+            y: bounds.y,
+            width: bounds.width,
+            height: bounds.height
+        });
+        setMenuConfig(undefined);
+    }, [menuConfig, internalColumns]);
+
+    const confirmRename = (newName: string) => {
+        if (renameModal && newName.trim() !== "") {
+            const newCols = [...internalColumns];
+            newCols[renameModal.colIndex] = { ...newCols[renameModal.colIndex], title: newName.trim() };
+            setInternalColumns(newCols);
+        }
+        setRenameModal(undefined);
+    };
 
     return (
-        <div className="grid-container">
+        <div className="grid-container" onClick={() => setMenuConfig(undefined)}>
             <div className="grid-controls">
                 <div className="left-controls">
                     <button
                         className={`btn-toggle ${!isLocked ? 'active' : ''}`}
                         onClick={() => setIsLocked(v => !v)}
                     >
-                        {!isLocked ? "🔒 Bloquear" : lockButtonTitle || "🔓 Editar"}
+                        {isLocked ? "🔒 Editar" : lockButtonTitle || "🔓 Bloquear"}
                     </button>
                     <button
                         className="btn-toggle"
@@ -221,13 +327,16 @@ export default function MyGrid(props: MyGridProps) {
                 )}
             </div>
 
-            <div className="grid-wrapper">
+            <div className="grid-wrapper" ref={containerRef}>
                 <DataEditor
+                    {...rest}
                     width="100%"
                     height="100%"
-                    columns={internalColumns}
+                    columns={displayColumns}
                     getCellContent={getCellContent}
                     rows={rowsData.length}
+                    onHeaderClicked={onHeaderClicked}
+                    onHeaderContextMenu={onHeaderContextMenu}
                     onCellEdited={onCellEdited}
                     gridSelection={selection}
                     onGridSelectionChange={onSelectionChange}
@@ -246,9 +355,45 @@ export default function MyGrid(props: MyGridProps) {
                         sticky: true,
                         tint: true,
                     }}
-                    {...rest}
                 />
             </div>
+
+            {menuConfig && (
+                <div
+                    className="context-menu"
+                    style={{ top: menuConfig.y, left: menuConfig.x }}
+                    onClick={e => e.stopPropagation()}
+                >
+                    <button onClick={addColumn}>➕ Adicionar Coluna</button>
+                    <button onClick={renameColumn}>✏️ Renomear Coluna</button>
+                    <button onClick={removeColumn}>🗑️ Excluir Coluna</button>
+                    <hr style={{ border: '0.1px solid rgba(255,255,255,0.1)', margin: '4px 0' }} />
+                    <button onClick={() => setMenuConfig(undefined)}>❌ Fechar</button>
+                </div>
+            )}
+
+            {renameModal && (
+                <div className="inline-editor-overlay" onClick={() => setRenameModal(undefined)}>
+                    <input
+                        autoFocus
+                        type="text"
+                        className="inline-header-input"
+                        style={{
+                            top: renameModal.y,
+                            left: renameModal.x,
+                            width: renameModal.width,
+                            height: renameModal.height
+                        }}
+                        defaultValue={renameModal.title}
+                        onClick={e => e.stopPropagation()}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') confirmRename(e.currentTarget.value);
+                            if (e.key === 'Escape') setRenameModal(undefined);
+                        }}
+                        onBlur={e => confirmRename(e.target.value)}
+                    />
+                </div>
+            )}
         </div>
     );
 }
