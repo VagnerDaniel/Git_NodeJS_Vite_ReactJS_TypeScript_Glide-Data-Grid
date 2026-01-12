@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import DataEditor, {
     type GridColumn,
     type Item,
@@ -7,69 +7,119 @@ import DataEditor, {
     type GridSelection,
     CompactSelection,
     type TextCell,
+    type DataEditorProps,
 } from "@glideapps/glide-data-grid";
 
 import "@glideapps/glide-data-grid/dist/index.css";
 
-interface Pessoa {
+// Interface para os dados do Grid (exemplo padrão)
+export interface GridDataRecord {
     id: number;
-    nome: string;
-    idade: number;
-    email: string;
-    status: "Ativo" | "Inativo";
+    [key: string]: any;
 }
 
-// Configurações globais
-const GRID_EDITABLE_DEFAULT = true;
+interface MyGridProps extends Partial<DataEditorProps> {
+    /** Dados iniciais da grade */
+    initialData?: GridDataRecord[];
+    /** Configuração de colunas */
+    columns: GridColumn[];
+    /** Define se a edição está habilitada globalmente */
+    isEditable?: boolean;
+    /** Mapeamento de colunas que podem ser editadas */
+    editableColumns?: Record<string, boolean>;
+    /** Mostrar contador de registros no topo */
+    showStats?: boolean;
+    /** Título customizado para o botão de trava */
+    lockButtonTitle?: string;
+    /** Callback disparado quando os dados mudam internamente */
+    onDataChange?: (newData: GridDataRecord[]) => void;
+}
 
-const columns: GridColumn[] = [
-    { id: "id", title: "ID", width: 50 },
-    { id: "nome", title: "Nome", width: 200 },
-    { id: "idade", title: "Idade", width: 80 },
-    { id: "email", title: "E-mail", width: 250 },
-    { id: "status", title: "Status", width: 100 },
-];
+const DEFAULT_EDITABLE_COLUMNS: Record<string, boolean> = {};
 
-const initialData: Pessoa[] = [
-    { id: 1, nome: "Ana Silva", idade: 22, email: "ana@exemplo.com", status: "Ativo" },
-    { id: 2, nome: "Pedro Santos", idade: 34, email: "pedro@exemplo.com", status: "Inativo" },
-    { id: 3, nome: "Lucas Oliveira", idade: 29, email: "lucas@exemplo.com", status: "Ativo" },
-    { id: 4, nome: "Carla Souza", idade: 25, email: "carla@exemplo.com", status: "Ativo" },
-    { id: 5, nome: "Marcos Lima", idade: 42, email: "marcos@exemplo.com", status: "Inativo" },
-];
+export default function MyGrid(props: MyGridProps) {
+    const {
+        initialData = [],
+        columns,
+        isEditable: isEditableProp = true,
+        editableColumns = DEFAULT_EDITABLE_COLUMNS,
+        showStats = true,
+        lockButtonTitle,
+        onDataChange,
+        // Repassar as demais props do DataEditor
+        rowMarkers = "both",
+        smoothScrollX = true,
+        smoothScrollY = true,
+        getCellsForSelection = true,
+        onRowAppended: onRowAppendedProp,
+        trailingRowOptions,
+        ...rest
+    } = props;
 
-const editableColumns: Record<string, boolean> = {
-    id: false,
-    nome: true,
-    idade: true,
-    email: true,
-    status: true,
-};
-
-export default function MyGrid() {
-    const [rowsData, setRowsData] = useState<Pessoa[]>(initialData);
-    const [isEditable, setIsEditable] = useState(GRID_EDITABLE_DEFAULT);
+    const [rowsData, setRowsData] = useState<GridDataRecord[]>(initialData);
+    const [isLocked, setIsLocked] = useState(!isEditableProp);
+    const [internalColumns, setInternalColumns] = useState<GridColumn[]>(columns);
 
     const [selection, setSelection] = useState<GridSelection>({
         columns: CompactSelection.empty(),
         rows: CompactSelection.empty(),
     });
 
-    // Memoizar o conteúdo para performance (essencial no glide-data-grid)
+    // Sincroniza estado de edição quando a prop muda
+    useMemo(() => {
+        setIsLocked(!isEditableProp);
+    }, [isEditableProp]);
+
+    // Sincroniza colunas internas quando a prop muda
+    useMemo(() => {
+        setInternalColumns(columns);
+    }, [columns]);
+
     const getCellContent = useCallback(([col, row]: Item): GridCell => {
-        const columnId = columns[col].id as keyof Pessoa;
+        const column = internalColumns[col];
+        const columnId = column.id as string;
         const rowData = rowsData[row];
-        const value = rowData[columnId];
+        const value = rowData ? rowData[columnId] : undefined;
 
-        const isColEditable = !!editableColumns[columnId];
+        const isColEditable = editableColumns[columnId] !== false;
+        const canEdit = !isLocked && isColEditable;
 
-        // Customização por tipo de dado (exemplo de expansão futura)
+        // Lógica de tipos de células baseada no valor ou na coluna
+        if (typeof value === "boolean") {
+            return {
+                kind: GridCellKind.Boolean,
+                data: value,
+                allowOverlay: false,
+                readonly: !canEdit,
+            };
+        }
+
+        if (columnId === "idade" || typeof value === "number") {
+            return {
+                kind: GridCellKind.Number,
+                data: Number(value),
+                displayData: String(value),
+                allowOverlay: canEdit,
+            };
+        }
+
+        if (columnId === "progresso") {
+            return {
+                kind: GridCellKind.Number,
+                data: Number(value),
+                displayData: `${value}%`,
+                allowOverlay: canEdit,
+                readonly: !canEdit,
+            };
+        }
+
+        // Customização visual para "Status"
         if (columnId === "status") {
             return {
                 kind: GridCellKind.Text,
-                data: String(value),
-                displayData: String(value),
-                allowOverlay: isEditable && isColEditable,
+                data: String(value || ""),
+                displayData: String(value || ""),
+                allowOverlay: canEdit,
                 contentAlign: "center",
                 themeOverride: {
                     textDark: value === "Ativo" ? "#4CAF50" : "#F44336",
@@ -79,80 +129,128 @@ export default function MyGrid() {
 
         return {
             kind: GridCellKind.Text,
-            data: String(value),
-            displayData: String(value),
-            allowOverlay: isEditable && isColEditable,
-            readonly: !isEditable || !isColEditable,
+            data: String(value || ""),
+            displayData: String(value || ""),
+            allowOverlay: canEdit,
+            readonly: !canEdit,
         } as TextCell;
-    }, [rowsData, isEditable]);
+    }, [rowsData, isLocked, internalColumns, editableColumns]);
 
     const onCellEdited = useCallback(([col, row]: Item, newValue: GridCell) => {
-        if (newValue.kind !== GridCellKind.Text) return;
+        const columnId = internalColumns[col].id as string;
+        let finalValue: any = undefined;
 
-        const columnId = columns[col].id as keyof Pessoa;
+        if (newValue.kind === GridCellKind.Text) finalValue = newValue.data;
+        if (newValue.kind === GridCellKind.Boolean) finalValue = newValue.data;
+        if (newValue.kind === GridCellKind.Number) finalValue = newValue.data;
 
         setRowsData(prev => {
             const newData = [...prev];
             newData[row] = {
                 ...newData[row],
-                [columnId]: newValue.data
+                [columnId]: finalValue
             };
+            if (onDataChange) onDataChange(newData);
             return newData;
         });
-    }, []);
+    }, [internalColumns, onDataChange]);
 
     const onSelectionChange = useCallback((newSelection: GridSelection) => {
         setSelection(newSelection);
     }, []);
 
-    const onRowAppended = useCallback(() => {
-        const newPessoa: Pessoa = {
+    const handleRowAppended = useCallback(() => {
+        if (onRowAppendedProp) {
+            onRowAppendedProp();
+            return;
+        }
+
+        const newRecord: GridDataRecord = {
             id: rowsData.length + 1,
-            nome: "",
-            idade: 0,
-            email: "",
-            status: "Ativo"
         };
-        setRowsData(prev => [...prev, newPessoa]);
-    }, [rowsData.length]);
+        internalColumns.forEach(c => {
+            if (c.id && c.id !== "id") {
+                // Tenta inferir valor padrão pelo tipo
+                newRecord[c.id as string] = c.id === "status" ? "Ativo" : (c.id === "idade" ? 0 : "");
+            }
+        });
+
+        const newData = [...rowsData, newRecord];
+        setRowsData(newData);
+        if (onDataChange) onDataChange(newData);
+    }, [rowsData.length, internalColumns, onRowAppendedProp, onDataChange]);
+
+    const onColumnMoved = useCallback((from: number, to: number) => {
+        setInternalColumns(prev => {
+            const newCols = [...prev];
+            const [moved] = newCols.splice(from, 1);
+            newCols.splice(to, 0, moved);
+            return newCols;
+        });
+    }, []);
+
+    const onColumnResize = useCallback((column: GridColumn, newSize: number) => {
+        setInternalColumns(prev => {
+            return prev.map(c => c.id === column.id ? { ...c, width: newSize } : c);
+        });
+    }, []);
+
+    const [showSearch, setShowSearch] = useState(false);
 
     return (
         <div className="grid-container">
             <div className="grid-controls">
-                <button
-                    className={`btn-toggle ${isEditable ? 'active' : ''}`}
-                    onClick={() => setIsEditable(v => !v)}
-                >
-                    {isEditable ? "🔒 Bloquear Edição" : "🔓 Liberar Edição"}
-                </button>
-                <span className="grid-stats">
-                    Total de registros: <strong>{rowsData.length}</strong>
-                </span>
+                <div className="left-controls">
+                    <button
+                        className={`btn-toggle ${!isLocked ? 'active' : ''}`}
+                        onClick={() => setIsLocked(v => !v)}
+                    >
+                        {!isLocked ? "🔒 Bloquear" : lockButtonTitle || "🔓 Editar"}
+                    </button>
+                    <button
+                        className="btn-toggle"
+                        onClick={() => setShowSearch(v => !v)}
+                    >
+                        🔍 Buscar
+                    </button>
+                </div>
+                {showStats && (
+                    <span className="grid-stats">
+                        Total de registros: <strong>{rowsData.length}</strong>
+                    </span>
+                )}
             </div>
 
             <div className="grid-wrapper">
                 <DataEditor
                     width="100%"
                     height="100%"
-                    columns={columns}
+                    columns={internalColumns}
                     getCellContent={getCellContent}
                     rows={rowsData.length}
                     onCellEdited={onCellEdited}
                     gridSelection={selection}
                     onGridSelectionChange={onSelectionChange}
-                    onRowAppended={onRowAppended}
-                    rowMarkers="both"
-                    smoothScrollX={true}
-                    smoothScrollY={true}
-                    getCellsForSelection={true}
-                    trailingRowOptions={{
+                    onRowAppended={handleRowAppended}
+                    onColumnMoved={onColumnMoved}
+                    onColumnResize={onColumnResize}
+                    rowMarkers={rowMarkers}
+                    smoothScrollX={smoothScrollX}
+                    smoothScrollY={smoothScrollY}
+                    getCellsForSelection={getCellsForSelection}
+                    showSearch={showSearch}
+                    onSearchClose={() => setShowSearch(false)}
+                    keybindings={{ search: true, selectAll: true, copy: true, paste: true }}
+                    trailingRowOptions={trailingRowOptions || {
                         hint: "Adicionar nova linha...",
                         sticky: true,
                         tint: true,
                     }}
+                    {...rest}
                 />
             </div>
         </div>
     );
 }
+
 

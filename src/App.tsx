@@ -4,21 +4,66 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 import MyGrid from './components/MyGrid';
+import { type GridColumn } from "@glideapps/glide-data-grid";
 
-import "@glideapps/glide-data-grid/dist/index.css"
+const columns: GridColumn[] = [
+  { id: "id", title: "ID", width: 50 },
+  { id: "nome", title: "Nome", width: 180 },
+  { id: "idade", title: "Idade", width: 80 },
+  { id: "ativo", title: "Ativo?", width: 80 },
+  { id: "progresso", title: "Progresso", width: 120 },
+  { id: "email", title: "E-mail", width: 220 },
+  { id: "status", title: "Status", width: 100 },
+];
+
+const initialData = [
+  { id: 1, nome: "Ana Silva", idade: 22, ativo: true, progresso: 80, email: "ana@exemplo.com", status: "Ativo" },
+  { id: 2, nome: "Pedro Santos", idade: 34, ativo: false, progresso: 30, email: "pedro@exemplo.com", status: "Inativo" },
+  { id: 3, nome: "Lucas Oliveira", idade: 29, ativo: true, progresso: 100, email: "lucas@exemplo.com", status: "Ativo" },
+  { id: 4, nome: "Carla Souza", idade: 25, ativo: true, progresso: 45, email: "carla@exemplo.com", status: "Ativo" },
+  { id: 5, nome: "Marcos Lima", idade: 42, ativo: false, progresso: 10, email: "marcos@exemplo.com", status: "Inativo" },
+  { id: 6, nome: "Julia Rocha", idade: 27, ativo: true, progresso: 95, email: "julia@exemplo.com", status: "Ativo" },
+];
 
 function App() {
   const [count, setCount] = useState(0)
 
-  return ( 
+  return (
     <>
-      <h1>Vite + React + Glide Data Grid</h1>
+      <h1 className="main-title">Glide Data Grid Master</h1>
 
-      <div>
-        <MyGrid />
+      <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+        <MyGrid
+          columns={columns}
+          initialData={initialData}
+          // --- Funcionalidades de Interface ---
+          rowMarkers="both"
+          freezeColumns={1}
+          verticalBorder={true}
+          headerHeight={44}
+          rowHeight={38}
+
+          // --- Funcionalidades de Interação ---
+          isEditable={true}
+          rangeSelect="multi-rect"
+          columnSelect="multi"
+          rowSelect="multi"
+          fillHandle={true}
+
+          // --- Customização de Edição ---
+          editableColumns={{ id: false }}
+
+          // --- Performance & UX ---
+          smoothScrollX={true}
+          smoothScrollY={true}
+          getCellsForSelection={true}
+
+          // --- Tooling ---
+          onColumnMoved={(f, t) => console.log(`Moved from ${f} to ${t}`)}
+        />
       </div>
       <div>
-        <p>Ola...</p> 
+        <p>Ola...</p>
       </div>
 
       <div>

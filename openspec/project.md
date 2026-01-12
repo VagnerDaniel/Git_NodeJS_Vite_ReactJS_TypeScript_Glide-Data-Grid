@@ -1,7 +1,7 @@
 # Contexto do Projeto
 
 ## Propósito
-Este projeto é um ambiente de aprendizado e desenvolvimento focado na implementação e customização do `glide-data-grid`. O objetivo é criar uma grade de dados de alta performance e rica em recursos para aplicações web.
+Este projeto é um ambiente de aprendizado e desenvolvimento focado na implementação e customização do `glide-data-grid`. O objetivo é criar uma grade de dados de alta performance e rica em recursos para aplicações web, com foco em facilitar a ativação/desativação de funcionalidades de maneira dinâmica através de props do componente `MyGrid`.
 
 ## Tech Stack
 - **Frontend**: React 18 (utilizando Vite como ferramenta de build)
