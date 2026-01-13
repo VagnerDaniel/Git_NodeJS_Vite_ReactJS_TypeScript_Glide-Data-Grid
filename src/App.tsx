@@ -60,6 +60,29 @@ function App() {
 
           // --- Tooling ---
           onColumnMoved={(f, t) => console.log(`Moved from ${f} to ${t}`)}
+
+          // ============================================
+          // --- Funcionalidades EXTRA MYGRID ---
+          // (Funcionalidades customizadas não nativas do Glide Data Grid)
+          // ============================================
+
+          // Mostra estatísticas de registros no topo
+          showStats={true}
+          // Título customizado do botão de bloqueio
+          lockButtonTitle="Bloquear"
+          // Habilita menu de contexto no header (colunas)
+          enableColumnContextMenu={true}
+          // Habilita menu de contexto nas linhas
+          enableRowContextMenu={true}
+          // Customização de cores do grid
+          gridColors={{
+            bgGrid: "#b1b1b1ff",                    // Cor de fundo do grid (área vazia)
+            bgCell: "#ffababff",                    // Cor de fundo das células com dados
+            borderHorizontal: "rgba(37, 107, 236, 0.74)",  // Bordas horizontais da matriz
+            borderVertical: "rgba(42, 238, 51, 0.78)",    // Bordas verticais da matriz
+            borderHeader: "rgba(0, 0, 0, 1)",       // Bordas do header
+            borderRowMarker: "rgba(203, 37, 224, 0.77)",    // Bordas do identificador de linha
+          }}
         />
       </div>
       <div>

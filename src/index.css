@@ -1,4 +1,24 @@
 /* Grid Modern Styles */
+:root {
+  --gdg-bg-grid: #1e1e1e;
+  --gdg-bg-cell: #1e1e1e;
+  --gdg-border-hor: rgba(255, 255, 255, 0.15);
+  --gdg-border-ver: rgba(255, 255, 255, 0.15);
+  --gdg-border-header: rgba(255, 255, 255, 0.2);
+  --gdg-border-row-marker: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --gdg-bg-grid: #f9f9f9;
+    --gdg-bg-cell: #ffffff;
+    --gdg-border-hor: rgba(0, 0, 0, 0.08);
+    --gdg-border-ver: rgba(0, 0, 0, 0.08);
+    --gdg-border-header: rgba(0, 0, 0, 0.12);
+    --gdg-border-row-marker: rgba(0, 0, 0, 0.05);
+  }
+}
+
 .grid-container {
   display: flex;
   flex-direction: column;
@@ -67,10 +87,10 @@
 
 .grid-wrapper {
   height: 500px;
-  background: #1e1e1e;
+  background: var(--grid-bg);
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
