@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react'
 import './index.css'
 
-import MyGlideGrid from './components/MyGlideGrid'
+import MyGlideGrid from './components/MyGlideGrid/MyGlideGrid'
 import { type GridColumn } from '@glideapps/glide-data-grid'
 
 const columns: GridColumn[] = [

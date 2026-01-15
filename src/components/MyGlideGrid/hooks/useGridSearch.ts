@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { SearchConfig, SearchOffset } from "./types";
+import type { SearchConfig, SearchOffset } from "../types";
 
 interface UseGridSearchProps {
     enabled: boolean;

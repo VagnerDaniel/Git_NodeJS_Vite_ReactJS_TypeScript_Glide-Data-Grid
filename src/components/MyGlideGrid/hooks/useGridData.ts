@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import type { GridColumn, Item, GridCell } from "@glideapps/glide-data-grid";
-import type { GridDataRecord } from "./types";
+import type { GridDataRecord } from "../types";
 
 interface UseGridDataProps {
     initialData: GridDataRecord[];

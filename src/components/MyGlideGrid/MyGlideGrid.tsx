@@ -7,13 +7,13 @@ import {
     type GridCell,
 } from "@glideapps/glide-data-grid";
 
-import GlideGridCore from "./GlideGridCore";
-import ContextMenu from "./ContextMenu";
-import { GridHeader } from "./grid/GridHeader";
-import { useGridData } from "./grid/useGridData";
-import { useGridSearch } from "./grid/useGridSearch";
-import { useGridMenus } from "./grid/useGridMenus";
-import type { MyGlideGridProps, PresetConfig, GridPreset, FeatureFlags } from "./grid/types";
+import GlideGridCore from "../GlideGridCore";
+import ContextMenu from "../ContextMenu";
+import { GridHeader } from "./parts/GridHeader";
+import { useGridData } from "./hooks/useGridData";
+import { useGridSearch } from "./hooks/useGridSearch";
+import { useGridMenus } from "./hooks/useGridMenus";
+import type { MyGlideGridProps, PresetConfig, GridPreset, FeatureFlags } from "./types";
 
 const PRESET_CONFIGS: Record<GridPreset, PresetConfig> = {
     default: {
