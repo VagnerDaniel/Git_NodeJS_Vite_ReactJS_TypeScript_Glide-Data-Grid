@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+﻿import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import DataEditor, {
     type GridColumn,
     type Item,
@@ -15,17 +15,17 @@ import DataEditor, {
 import "@glideapps/glide-data-grid/dist/index.css";
 import ContextMenu from "./ContextMenu";
 
-// Interface para os dados do Grid (exemplo padrão)
+// Interface para os dados do Grid (exemplo padrÃ£o)
 export interface GridDataRecord {
     id: number;
     [key: string]: any;
 }
 
-/** Interface para customização de cores do grid */
+/** Interface para customizaÃ§Ã£o de cores do grid */
 export interface GridColors {
-    /** Cor de fundo do grid (área vazia) */
+    /** Cor de fundo do grid (Ã¡rea vazia) */
     bgGrid?: string;
-    /** Cor de fundo das células com dados */
+    /** Cor de fundo das cÃ©lulas com dados */
     bgCell?: string;
     /** Cor das bordas horizontais da matriz de dados */
     borderHorizontal?: string;
@@ -37,28 +37,28 @@ export interface GridColors {
     borderRowMarker?: string;
 }
 
-// Cores padrão removidas para respeitar a governança do CSS
+// Cores padrÃ£o removidas para respeitar a governanÃ§a do CSS
 
 interface MyGridProps extends Partial<DataEditorProps> {
     /** Dados iniciais da grade */
     initialData?: GridDataRecord[];
-    /** Configuração de colunas */
+    /** ConfiguraÃ§Ã£o de colunas */
     columns: GridColumn[];
-    /** Define se a edição está habilitada globalmente */
+    /** Define se a ediÃ§Ã£o estÃ¡ habilitada globalmente */
     isEditable?: boolean;
     /** Mapeamento de colunas que podem ser editadas */
     editableColumns?: Record<string, boolean>;
     /** Mostrar contador de registros no topo */
     showStats?: boolean;
-    /** Título customizado para o botão de trava */
+    /** TÃ­tulo customizado para o botÃ£o de trava */
     lockButtonTitle?: string;
     /** Callback disparado quando os dados mudam internamente */
     onDataChange?: (newData: GridDataRecord[]) => void;
-    /** Habilita o menu de contexto do header (colunas) - padrão: true */
+    /** Habilita o menu de contexto do header (colunas) - padrÃ£o: true */
     enableColumnContextMenu?: boolean;
-    /** Habilita o menu de contexto das linhas - padrão: true */
+    /** Habilita o menu de contexto das linhas - padrÃ£o: true */
     enableRowContextMenu?: boolean;
-    /** Customização de cores do grid */
+    /** CustomizaÃ§Ã£o de cores do grid */
     gridColors?: GridColors;
 }
 
@@ -116,12 +116,12 @@ export default function MyGrid(props: MyGridProps) {
         rows: CompactSelection.empty(),
     });
 
-    // Sincroniza estado de edição quando a prop muda
+    // Sincroniza estado de ediÃ§Ã£o quando a prop muda
     useEffect(() => {
         setIsLocked(!isEditableProp);
     }, [isEditableProp]);
 
-    // Ordenação dos dados
+    // OrdenaÃ§Ã£o dos dados
     const sortedRows = useMemo(() => {
         if (!sortState) return rowsData;
 
@@ -155,7 +155,7 @@ export default function MyGrid(props: MyGridProps) {
             if (sortState && c.id === sortState.columnId) {
                 return {
                     ...c,
-                    title: `${c.title} ${sortState.direction === "asc" ? "↑" : "↓"}`
+                    title: `${c.title} ${sortState.direction === "asc" ? "â†‘" : "â†“"}`
                 };
             }
             return c;
@@ -171,14 +171,14 @@ export default function MyGrid(props: MyGridProps) {
         const isColEditable = editableColumns[columnId] !== false;
         const canEdit = !isLocked && isColEditable;
 
-        // Log para depurar por que uma célula não edita (usar com cautela para não poluir)
-        // if (row === 0) console.log(`Célula [${col},${row}] (${columnId}) - canEdit: ${canEdit}`);
+        // Log para depurar por que uma cÃ©lula nÃ£o edita (usar com cautela para nÃ£o poluir)
+        // if (row === 0) console.log(`CÃ©lula [${col},${row}] (${columnId}) - canEdit: ${canEdit}`);
 
         if (typeof value === "boolean" || columnId === "ativo") {
             return {
                 kind: GridCellKind.Boolean,
                 data: Boolean(value),
-                allowOverlay: false, // Booleano não usa overlay
+                allowOverlay: false, // Booleano nÃ£o usa overlay
                 readonly: !canEdit,
             };
         }
@@ -211,11 +211,11 @@ export default function MyGrid(props: MyGridProps) {
             newValue.kind === GridCellKind.Boolean) {
             finalValue = (newValue as any).data;
         } else {
-            console.warn("Tipo de célula não suportado para edição:", newValue.kind);
+            console.warn("Tipo de cÃ©lula nÃ£o suportado para ediÃ§Ã£o:", newValue.kind);
             return;
         }
 
-        console.log(`✅ Editando: [${col},${row}] ${columnId} ->`, finalValue);
+        console.log(`âœ… Editando: [${col},${row}] ${columnId} ->`, finalValue);
 
         setRowsData(prev => {
             const newData = [...prev];
@@ -243,7 +243,7 @@ export default function MyGrid(props: MyGridProps) {
         };
         internalColumns.forEach(c => {
             if (c.id && c.id !== "id") {
-                // Tenta inferir valor padrão pelo tipo
+                // Tenta inferir valor padrÃ£o pelo tipo
                 newRecord[c.id as string] = c.id === "status" ? "Ativo" : (c.id === "idade" ? 0 : "");
             }
         });
@@ -275,13 +275,13 @@ export default function MyGrid(props: MyGridProps) {
     const [rowMenuConfig, setRowMenuConfig] = useState<{ x: number, y: number, rowIndex: number } | undefined>();
     const [renameModal, setRenameModal] = useState<{ colIndex: number, title: string, x: number, y: number, width: number, height: number } | undefined>();
 
-    // Largura e altura estimadas do menu de contexto para cálculo de posicionamento
+    // Largura e altura estimadas do menu de contexto para cÃ¡lculo de posicionamento
     const MENU_WIDTH = 200;
     const MENU_HEIGHT = 180;
     const ROW_MENU_HEIGHT = 200;
 
     const onHeaderContextMenu = useCallback((colIndex: number, event: any) => {
-        // Verifica se o menu de contexto de coluna está habilitado
+        // Verifica se o menu de contexto de coluna estÃ¡ habilitado
         if (!enableColumnContextMenu) return;
 
         event.preventDefault();
@@ -289,11 +289,11 @@ export default function MyGrid(props: MyGridProps) {
         // Usa os bounds do header da coluna para posicionar o menu corretamente
         const bounds = event.bounds;
 
-        // Posição inicial: logo abaixo do header, alinhado à esquerda da coluna
+        // PosiÃ§Ã£o inicial: logo abaixo do header, alinhado Ã  esquerda da coluna
         let x = bounds.x;
         let y = bounds.y + bounds.height;
 
-        // Obtém as dimensões da viewport
+        // ObtÃ©m as dimensÃµes da viewport
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
@@ -307,7 +307,7 @@ export default function MyGrid(props: MyGridProps) {
             y = bounds.y - MENU_HEIGHT; // Abre acima do header
         }
 
-        // Garante que não fique com coordenadas negativas
+        // Garante que nÃ£o fique com coordenadas negativas
         x = Math.max(10, x);
         y = Math.max(10, y);
 
@@ -319,23 +319,23 @@ export default function MyGrid(props: MyGridProps) {
         });
     }, [enableColumnContextMenu]);
 
-    // Handler para menu de contexto de linha (clique direito na numeração)
+    // Handler para menu de contexto de linha (clique direito na numeraÃ§Ã£o)
     const onCellContextMenu = useCallback(([col, row]: Item, event: any) => {
-        // col === -1 significa que clicou no row marker (numeração da linha)
+        // col === -1 significa que clicou no row marker (numeraÃ§Ã£o da linha)
         if (col !== -1) return;
 
-        // Verifica se o menu de contexto de linha está habilitado
+        // Verifica se o menu de contexto de linha estÃ¡ habilitado
         if (!enableRowContextMenu) return;
 
         event.preventDefault();
 
         const bounds = event.bounds;
 
-        // Posição inicial: ao lado direito do row marker
+        // PosiÃ§Ã£o inicial: ao lado direito do row marker
         let x = bounds.x + bounds.width;
         let y = bounds.y;
 
-        // Obtém as dimensões da viewport
+        // ObtÃ©m as dimensÃµes da viewport
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
@@ -345,7 +345,7 @@ export default function MyGrid(props: MyGridProps) {
         }
 
         // Ajusta se o menu ultrapassar a borda inferior da tela
-        // Usa uma margem extra de segurança (20px) para garantir visibilidade
+        // Usa uma margem extra de seguranÃ§a (20px) para garantir visibilidade
         if (y + ROW_MENU_HEIGHT > viewportHeight - 20) {
             // Posiciona o menu acima do ponto de clique, subtraindo a altura do menu
             y = bounds.y - ROW_MENU_HEIGHT + bounds.height;
@@ -356,7 +356,7 @@ export default function MyGrid(props: MyGridProps) {
             }
         }
 
-        // Garante que não fique com coordenadas negativas
+        // Garante que nÃ£o fique com coordenadas negativas
         x = Math.max(10, x);
         y = Math.max(10, y);
 
@@ -365,7 +365,7 @@ export default function MyGrid(props: MyGridProps) {
         setRowMenuConfig({ x, y, rowIndex: row });
     }, [enableRowContextMenu]);
 
-    // Funções para manipulação de linhas
+    // FunÃ§Ãµes para manipulaÃ§Ã£o de linhas
     const addRowAbove = useCallback(() => {
         if (!rowMenuConfig) return;
         const newRecord: GridDataRecord = {
@@ -405,7 +405,7 @@ export default function MyGrid(props: MyGridProps) {
     const deleteRow = useCallback(() => {
         if (!rowMenuConfig) return;
         if (rowsData.length <= 1) {
-            alert("Não é possível excluir a última linha.");
+            alert("NÃ£o Ã© possÃ­vel excluir a Ãºltima linha.");
             setRowMenuConfig(undefined);
             return;
         }
@@ -435,9 +435,9 @@ export default function MyGrid(props: MyGridProps) {
         if (!menuConfig) return;
         const colToRemove = internalColumns[menuConfig.colIndex];
 
-        // Proteção para não remover a coluna ID
+        // ProteÃ§Ã£o para nÃ£o remover a coluna ID
         if (colToRemove.id === "id") {
-            alert("A coluna ID não pode ser removida.");
+            alert("A coluna ID nÃ£o pode ser removida.");
             setMenuConfig(undefined);
             return;
         }
@@ -452,14 +452,14 @@ export default function MyGrid(props: MyGridProps) {
         const col = internalColumns[menuConfig.colIndex];
 
         if (col.id === "id") {
-            alert("A coluna ID não pode ser renomeada.");
+            alert("A coluna ID nÃ£o pode ser renomeada.");
             setMenuConfig(undefined);
             return;
         }
 
         const { bounds } = menuConfig;
 
-        // O cabeçalho está sempre no topo do grid-wrapper
+        // O cabeÃ§alho estÃ¡ sempre no topo do grid-wrapper
         setRenameModal({
             colIndex: menuConfig.colIndex,
             title: col.title,
@@ -480,28 +480,32 @@ export default function MyGrid(props: MyGridProps) {
         setRenameModal(undefined);
     };
 
-    // Callback para customizar o desenho das células
-    // Remove bordas de células que estão fora da matriz de dados
+    // Callback para customizar o desenho das cÃ©lulas
+    // Remove bordas de cÃ©lulas que estÃ£o fora da matriz de dados
     const drawCell: DrawCellCallback = useCallback((args, drawContent) => {
         const { ctx, rect, row, col, theme } = args;
 
-        // Se a célula está dentro dos dados (matriz de dados), aplica fundo e bordas customizadas
+        // Se a cÃ©lula estÃ¡ dentro dos dados (matriz de dados), aplica fundo e bordas customizadas
         if (row < rowsData.length && col >= 0 && col < internalColumns.length) {
             // Desenha o fundo primeiro usando a cor do TEMA (governada pelo CSS/Props)
             ctx.save();
-            ctx.fillStyle = theme.bgCell ?? "transparent";
+            const baseFill = (args as { cellFillColor?: string }).cellFillColor ?? theme.bgCell ?? "transparent";
+            const fillColor = !showSearch && !args.highlighted
+                ? theme.bgCell ?? "transparent"
+                : baseFill;
+            ctx.fillStyle = fillColor;
             // Para todas as linhas, desenha o fundo normalmente
             ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 
             // ESPECIAL: Para a primeira linha, desenha uma pequena faixa da cor da borda do header 
-            // no topo para garantir que não haja frestas
+            // no topo para garantir que nÃ£o haja frestas
             if (row === 0) {
                 ctx.fillStyle = theme.borderColor ?? "transparent";
                 //  ctx.fillRect(rect.x, rect.y - 2, rect.width, 5);
             }
             ctx.restore();
 
-            // Desenha o conteúdo padrão da célula
+            // Desenha o conteÃºdo padrÃ£o da cÃ©lula
             drawContent();
 
             // Desenha bordas por cima usando as cores do TEMA
@@ -523,7 +527,7 @@ export default function MyGrid(props: MyGridProps) {
 
             return true;
         } else {
-            // Célula fora da matriz de dados - preenche com cor de fundo do grid (bgCellMedium no tema)
+            // CÃ©lula fora da matriz de dados - preenche com cor de fundo do grid (bgCellMedium no tema)
             ctx.fillStyle = theme.bgCellMedium ?? "transparent";
             ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
             return true;
@@ -534,7 +538,7 @@ export default function MyGrid(props: MyGridProps) {
     const drawHeader: DrawHeaderCallback = useCallback((args, drawContent) => {
         const { ctx, rect, theme } = args;
 
-        // Desenha o conteúdo padrão do header
+        // Desenha o conteÃºdo padrÃ£o do header
         drawContent();
 
         // Desenha bordas customizadas no header usando o tema
@@ -553,7 +557,14 @@ export default function MyGrid(props: MyGridProps) {
 
         return true;
     }, []);
-
+    const themeColors = {
+        bgCell: gridColors.bgCell ?? "#ffffff",
+        bgGrid: gridColors.bgGrid ?? "#f5f5f5",
+        borderHorizontal: gridColors.borderHorizontal ?? "rgba(0, 0, 0, 0.1)",
+        borderVertical: gridColors.borderVertical ?? "rgba(0, 0, 0, 0.1)",
+        borderHeader: gridColors.borderHeader ?? "rgba(0, 0, 0, 0.2)",
+        borderRowMarker: gridColors.borderRowMarker ?? "rgba(0, 0, 0, 0.2)",
+    };
     return (
         <div className="grid-container" onClick={() => { setMenuConfig(undefined); setRowMenuConfig(undefined); }}>
             <div className="grid-controls">
@@ -562,13 +573,13 @@ export default function MyGrid(props: MyGridProps) {
                         className={`btn-toggle ${!isLocked ? 'active' : ''}`}
                         onClick={() => setIsLocked(v => !v)}
                     >
-                        {isLocked ? "🔒 Editar" : lockButtonTitle || "🔓 Bloquear"}
+                        {isLocked ? "ðŸ”’ Editar" : lockButtonTitle || "ðŸ”“ Bloquear"}
                     </button>
                     <button
                         className="btn-toggle"
                         onClick={() => setShowSearch(v => !v)}
                     >
-                        🔍 Buscar
+                        ðŸ” Buscar
                     </button>
                 </div>
                 {showStats && (
@@ -609,22 +620,22 @@ export default function MyGrid(props: MyGridProps) {
                         sticky: true,
                         tint: true,
                     }}
-                    // Configuração de tema - bordas transparentes para que drawCell controle
-                    // Usa bgGrid como fundo padrão (row marker e células fora da matriz)
-                    // O drawCell vai desenhar bgCell apenas nas células da matriz de dados
+                    // ConfiguraÃ§Ã£o de tema - bordas transparentes para que drawCell controle
+                    // Usa bgGrid como fundo padrÃ£o (row marker e cÃ©lulas fora da matriz)
+                    // O drawCell vai desenhar bgCell apenas nas cÃ©lulas da matriz de dados
                     theme={{
                         // Mapeamos as cores que vem do CSS para as chaves do tema do Glide
-                        bgCell: gridColors.bgCell,
-                        bgCellMedium: gridColors.bgGrid, // Usado para o fundo vazio
-                        horizontalBorderColor: gridColors.borderHorizontal,
-                        borderColor: gridColors.borderVertical,
-                        bgHeaderHasFocus: gridColors.borderRowMarker,
-                        // Mantemos cores de texto neutras se não vierem do CSS
+                        bgCell: themeColors.bgCell,
+                        bgCellMedium: themeColors.bgGrid, // Usado para o fundo vazio
+                        horizontalBorderColor: themeColors.borderHorizontal,
+                        borderColor: themeColors.borderVertical,
+                        bgHeaderHasFocus: themeColors.borderRowMarker,
+                        // Mantemos cores de texto neutras se nÃ£o vierem do CSS
                         textDark: "#000000",
                         textMedium: "#333333",
                         textLight: "#666666",
                     }}
-                    // Não desenha células além dos dados
+                    // NÃ£o desenha cÃ©lulas alÃ©m dos dados
                     experimental={{
                         strict: true,
                     }}
@@ -637,9 +648,9 @@ export default function MyGrid(props: MyGridProps) {
                     y={menuConfig.y}
                     onClose={() => setMenuConfig(undefined)}
                     items={[
-                        { label: "Adicionar Coluna", icon: "➕", onClick: addColumn },
-                        { label: "Renomear Coluna", icon: "✏️", onClick: renameColumn },
-                        { label: "Excluir Coluna", icon: "🗑️", onClick: removeColumn },
+                        { label: "Adicionar Coluna", icon: "âž•", onClick: addColumn },
+                        { label: "Renomear Coluna", icon: "âœï¸", onClick: renameColumn },
+                        { label: "Excluir Coluna", icon: "ðŸ—‘ï¸", onClick: removeColumn },
                     ]}
                 />
             )}
@@ -650,9 +661,9 @@ export default function MyGrid(props: MyGridProps) {
                     y={rowMenuConfig.y}
                     onClose={() => setRowMenuConfig(undefined)}
                     items={[
-                        { label: "Adicionar Linha Acima", icon: "⬆️", onClick: addRowAbove },
-                        { label: "Adicionar Linha Abaixo", icon: "⬇️", onClick: addRowBelow, dividerAfter: true },
-                        { label: "Excluir Linha", icon: "🗑️", onClick: deleteRow },
+                        { label: "Adicionar Linha Acima", icon: "â¬†ï¸", onClick: addRowAbove },
+                        { label: "Adicionar Linha Abaixo", icon: "â¬‡ï¸", onClick: addRowBelow, dividerAfter: true },
+                        { label: "Excluir Linha", icon: "ðŸ—‘ï¸", onClick: deleteRow },
                     ]}
                 />
             )}
@@ -682,5 +693,6 @@ export default function MyGrid(props: MyGridProps) {
         </div>
     );
 }
+
 
 
